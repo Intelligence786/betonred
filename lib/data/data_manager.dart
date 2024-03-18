@@ -1,6 +1,7 @@
 import 'package:betonred/core/app_export.dart';
 import 'package:betonred/data/models/potion_model/potion_model.dart';
 import 'package:betonred/data/models/supply_model/supply_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DataManager {
   static List<SupplyModel> suppliesList = [
@@ -182,7 +183,7 @@ class DataManager {
     ),
   ];
 
- static dynamic findPotionsBySupplies(
+  static dynamic findPotionsBySupplies(
       SupplyModel supply1, SupplyModel supply2, SupplyModel supply3) {
     List<PotionModel> foundPotions = [];
 
@@ -199,5 +200,69 @@ class DataManager {
     }
 
     return null;
+  }
+
+  static const _searchButtonKey = 'search_button_state';
+  static const _lastUpdateTimeKey = 'last_update_time';
+  static const _potionIndexKey = 'potion_index_key';
+  static const _progressKey = 'progress_key';
+
+  static Future<PotionModel> getCurrentPotion() async
+  {
+    int index = await getPotionIndexKey();
+
+    return potionsList[index];
+  }
+
+  static Future<void> setSearchButtonState(bool isEnabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_searchButtonKey, isEnabled);
+  }
+
+  static Future<bool> getSearchButtonState() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_searchButtonKey) ?? true;
+  }
+
+  static Future<DateTime> getLastUpdateTime() async {
+    final prefs = await SharedPreferences.getInstance();
+    final timestamp = prefs.getInt(_lastUpdateTimeKey);
+    return timestamp != null
+        ? DateTime.fromMillisecondsSinceEpoch(timestamp)
+        : DateTime.now();
+  }
+
+  static Future<void> setLastUpdateTime(DateTime time) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_lastUpdateTimeKey, time.millisecondsSinceEpoch);
+  }
+
+  static Future<int> getPotionIndexKey() async {
+    final prefs = await SharedPreferences.getInstance();
+    int indexKey = 1;
+    if (prefs.containsKey(_potionIndexKey))
+      indexKey = await prefs.getInt(_potionIndexKey)!;
+    return indexKey;
+  }
+
+  static Future<void> setPotionIndexKey() async {
+    final prefs = await SharedPreferences.getInstance();
+    int indexKey = await getPotionIndexKey();
+    await prefs.setInt(_potionIndexKey, indexKey + 1);
+  }
+
+  static Future<void> setProgress(double progress) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setDouble(_progressKey, progress);
+  }
+
+  static Future<double> getProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+    double progressSaved = 0;
+    if (prefs.containsKey(_progressKey))
+      progressSaved = await prefs.getDouble(_progressKey)!;
+
+    return progressSaved;
   }
 }

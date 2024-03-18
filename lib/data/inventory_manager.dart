@@ -35,11 +35,8 @@ class InventoryManager {
       }
     }
     if (!found) {
-      print('not found');
-      print(newItem.supply.name);
       inventory.add(newItem);
     }
-    print('saved');
     await saveInventory(inventory);
   }
 

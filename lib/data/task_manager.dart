@@ -6,13 +6,14 @@ import 'models/task_models/task_model.dart';
 
 class TaskManager {
   static const _taskKey = 'active_tasks';
-  static const _lastUpdateTimeKey = 'last_update_time';
+  static const _lastUpdateTimeKey = 'last_update_time_tasks';
 
   static Future<List<TaskModel>> getActiveTasks() async {
     final prefs = await SharedPreferences.getInstance();
     final tasksJson = prefs.getString(_taskKey);
     if (tasksJson != null) {
       final List<dynamic> tasksData = json.decode(tasksJson);
+
       return tasksData.map((taskJson) => TaskModel.fromJson(taskJson)).toList();
     } else {
       return [];

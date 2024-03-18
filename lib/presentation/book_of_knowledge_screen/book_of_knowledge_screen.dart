@@ -20,11 +20,20 @@ class BookOfKnowledgeScreen extends StatefulWidget {
 
 class _BookOfKnowledgeScreenState extends State<BookOfKnowledgeScreen> {
   int currentItemIndex = 0;
+  int openedIndex = -1;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(height: 80,
+      appBar: CustomAppBar(
+        height: 80,
         centerTitle: true,
         title: Text(
           'Book of knowledge',
@@ -53,79 +62,98 @@ class _BookOfKnowledgeScreenState extends State<BookOfKnowledgeScreen> {
         ),
       ),
       extendBody: true,
-      body: Container(
-        decoration: AppDecoration.gradientMain,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            CarouselSlider.builder(
-              options: CarouselOptions(
-                viewportFraction: 0.5,
-                //height: 200.v,
-                //aspectRatio: 2.0,
-                onPageChanged: (itemIndex, CarouselPage) {
-                  setState(() {
-                    currentItemIndex = itemIndex;
-                  });
-                },
-              ),
-              itemCount: DataManager.potionsList.length,
-              itemBuilder: (
-                BuildContext context,
-                int itemIndex,
-                int pageViewIndex,
-              ) {
-                return Container(
-                  margin: EdgeInsets.only(right: 8.h),
-                  height: 180.v,
-                  width: 180.h,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Container(
-                        child: CustomImageView(
-                          imagePath: ImageConstant.imgRectangle4,
-                        ),
-                      ),
-                      Container(
-                        child: DataManager.potionsList[itemIndex].isOpened
-                            ? CustomImageView(
-                                height: 150.v,
-                                fit: BoxFit.fitHeight,
-                                imagePath:
-                                    DataManager.potionsList[itemIndex].image)
-                            : CustomImageView(
+      body:
+      FutureBuilder<int>(
+        future: isOpenedIndex(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            final index = snapshot.data!;
+            return Container(
+              decoration: AppDecoration.gradientMain,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  CarouselSlider.builder(
+                    options: CarouselOptions(
+                      viewportFraction: 0.5,
+                      //height: 200.v,
+                      //aspectRatio: 2.0,
+                      onPageChanged: (itemIndex, CarouselPage) {
+                        setState(() {
+                          currentItemIndex = itemIndex;
+                        });
+                      },
+                    ),
+                    itemCount: DataManager.potionsList.length,
+                    itemBuilder: (BuildContext context,
+                        int itemIndex,
+                        int pageViewIndex,) {
+                      return Container(
+                        margin: EdgeInsets.only(right: 8.h),
+                        height: 180.v,
+                        width: 180.h,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Container(
+                              child: CustomImageView(
+                                imagePath: ImageConstant.imgRectangle4,
+                              ),
+                            ),
+
+                            Container(
+                              child: index >= itemIndex
+                                  ? CustomImageView(
+                                  height: 150.v,
+                                  fit: BoxFit.fitHeight,
+                                  imagePath:
+                                  DataManager.potionsList[itemIndex].image)
+                                  : CustomImageView(
                                 height: 100.v,
                                 fit: BoxFit.fitHeight,
                                 imagePath: ImageConstant.img,
                               ),
-                      ),
-                    ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
-            SizedBox(
-              height: 50,
-            ),
-            Text(
-              'Potion supplies',
-              style: CustomTextStyles.titleMediumMedium,
-            ),
-            Container(
-              height: 100.v,
-              child: _potionSupllies(
-                  context, DataManager.potionsList[currentItemIndex]),
-            ),
-          ],
-        ),
+                  SizedBox(
+                    height: 50,
+                  ),
+                  Text(
+                    'Potion supplies',
+                    style: CustomTextStyles.titleMediumMedium,
+                  ),
+                  Container(
+                    height: 100.v,
+                    child: _potionSupllies(
+                        context, index),
+                  ),
+                ],
+              ),
+            );
+          } else if (snapshot.hasError) {
+          return Text('Error');
+          } else {
+          return Text('Loading...');
+          }
+        },
       ),
+
+
     );
   }
 
-  Widget _potionSupllies(BuildContext context, PotionModel potion) {
-    if (potion.isOpened) {
+  Future<int> isOpenedIndex() async {
+    int potionIndex = await DataManager.getPotionIndexKey();
+    return potionIndex;
+  }
+
+  Widget _potionSupllies(BuildContext context, int index) {
+    if (index >= currentItemIndex) {
       return Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

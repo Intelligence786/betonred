@@ -2,6 +2,7 @@ import 'package:betonred/data/data_manager.dart';
 import 'package:betonred/data/inventory_manager.dart';
 import 'package:betonred/data/models/potion_model/potion_model.dart';
 import 'package:betonred/data/models/task_models/task_model.dart';
+import 'package:betonred/presentation/main_game_screen/progress_bloc/progress_bloc.dart';
 import 'package:betonred/widgets/app_bar/custom_app_bar.dart';
 import 'package:betonred/widgets/custom_elevated_button.dart';
 import 'package:betonred/widgets/reward_screen.dart';
@@ -25,7 +26,7 @@ class PotionRoomScreen extends StatefulWidget {
 
 class _PotionRoomScreenState extends State<PotionRoomScreen> {
   List<InventoryItemModel?> brewingIngredients = List.filled(3, null);
-
+  late final TaskBloc taskBloc;
   late Future<List<InventoryItemModel>> inventoryItems;
   int isReward = -1;
   late PotionModel currentPotion;
@@ -60,7 +61,8 @@ class _PotionRoomScreenState extends State<PotionRoomScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final TaskBloc taskBloc = BlocProvider.of<TaskBloc>(context);
+    TaskBloc taskBloc = BlocProvider.of<TaskBloc>(context);
+    ProgressBloc progressBloc = BlocProvider.of<ProgressBloc>(context);
     return Stack(
       children: [
         Scaffold(
@@ -187,6 +189,7 @@ class _PotionRoomScreenState extends State<PotionRoomScreen> {
                                         CustomImageView(
                                           fit: BoxFit.fitWidth,
                                           onTap: () {
+
                                             addToBrewing(snapshot.data![index]);
                                           },
                                           imagePath: snapshot
@@ -244,11 +247,13 @@ class _PotionRoomScreenState extends State<PotionRoomScreen> {
                         taskBloc.add(
                           TaskCompleteEvent(potion: potion),
                         );
+                        progressBloc.add(IncrementProgress(0.5));
                         setState(() {
                           isReward = 1;
                         });
                       } else {
                         currentPotion = DataManager.potionsList[0];
+                        progressBloc.add(IncrementProgress(0.5));
                         setState(() {
                           isReward = 0;
                         });
@@ -274,8 +279,9 @@ class _PotionRoomScreenState extends State<PotionRoomScreen> {
                     ),
                   ),
                   mainText: isReward == 0 ? 'Hmm' : 'Done!',
-                  secondText:
-                  isReward == 0 ? 'Looks like this potion was not on list...\nBe careful. You just lost some ingredients' : 'Queen Nefertari is happy! Continue!',
+                  secondText: isReward == 0
+                      ? 'Looks like this potion was not on list...\nBe careful. You just lost some ingredients'
+                      : 'Queen Nefertari is happy! Continue!',
                   character: Character.alchemist)
               .build(context),
       ],
@@ -283,28 +289,28 @@ class _PotionRoomScreenState extends State<PotionRoomScreen> {
   }
 
   Widget _taskListWidget(BuildContext context, TaskBloc taskBloc) {
-    return StreamBuilder<List<TaskModel>>(
-      stream: taskBloc.tasks, // Подписываемся на изменения в блоке
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return Container(
-            // decoration: AppDecoration.fillOnPrimary,
-            padding: EdgeInsets.only(
-                left: 20.h, right: 20.h, top: 20.v, bottom: 10.v),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Today\'s order',
-                  style: theme.textTheme.titleMedium,
-                ),
-                SizedBox(
-                  height: 8.v,
-                ),
-                Container(
-                  height: 80.v,
-                  child: ListView.builder(
+    return Container(
+      // decoration: AppDecoration.fillOnPrimary,
+      padding:
+          EdgeInsets.only(left: 20.h, right: 20.h, top: 20.v, bottom: 10.v),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Today\'s order',
+            style: theme.textTheme.titleMedium,
+          ),
+          SizedBox(
+            height: 8.v,
+          ),
+          Container(
+            height: 80.v,
+            child: StreamBuilder<List<TaskModel>>(
+              stream: taskBloc.tasks, // Подписываемся на изменения в блоке
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                 return ListView.builder(
                     itemCount: snapshot.data?.length,
                     scrollDirection: Axis.horizontal,
                     itemBuilder: (context, index) {
@@ -346,15 +352,15 @@ class _PotionRoomScreenState extends State<PotionRoomScreen> {
                         ),
                       );
                     },
-                  ),
-                ),
-              ],
+                  );
+                } else {
+                  return Center(child: CircularProgressIndicator());
+                }
+              },
             ),
-          );
-        } else {
-          return CircularProgressIndicator();
-        }
-      },
+          ),
+        ],
+      ),
     );
   }
 }

@@ -1,3 +1,5 @@
+import 'package:betonred/presentation/main_game_screen/hunt_timer_cubit/hunt_time_cubit.dart';
+import 'package:betonred/presentation/main_game_screen/progress_bloc/progress_bloc.dart';
 import 'package:betonred/presentation/main_game_screen/task_bloc/task_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -41,6 +43,12 @@ class MyApp extends StatelessWidget {
                   themeType: PrefUtils().getThemeData(),
                 ),
               ),
+            ),
+            BlocProvider(
+              create: (context) => HuntTimeCubit(),
+            ),
+            BlocProvider(
+              create: (context) => ProgressBloc()..add(InitializeProgressEvent()),
             ),
           ],
           child: BlocBuilder<ThemeBloc, ThemeState>(

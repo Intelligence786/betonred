@@ -10,12 +10,15 @@ class RewardScreen {
 
   final Character character;
 
+  final VoidCallback? onTap; // Используем VoidCallback? для onTap
+
   RewardScreen({
     required this.childWidget,
     this.mainText = '',
     this.secondText = '',
     this.character = Character.queen,
-  });
+    VoidCallback? onTap, // onTap теперь типизирован как VoidCallback?
+  }): onTap = onTap ?? NavigatorService.goBack;
 
   Widget build(BuildContext context) {
     return Container(
@@ -24,7 +27,7 @@ class RewardScreen {
         type: MaterialType.transparency,
         child: InkWell(
           onTap: () {
-            NavigatorService.goBack();
+            onTap?.call();
           },
           child: Stack(
             alignment: Alignment.topCenter,
@@ -51,7 +54,9 @@ class RewardScreen {
               Align(
                 alignment: Alignment.bottomCenter,
                 child: CustomImageView(
-                  alignment:  character == Character.queen ? Alignment.bottomCenter : Alignment.bottomRight,
+                  alignment: character == Character.queen
+                      ? Alignment.bottomCenter
+                      : Alignment.bottomRight,
                   imagePath: character == Character.queen
                       ? ImageConstant.imgQueenMoreHalf
                       : ImageConstant.imgAlchemistMoreHalf,
@@ -70,17 +75,17 @@ class RewardScreen {
                         ),
                       ),
                     ),
-                    if(secondText!='')
-                    Flexible(
-                      child: Padding(
-                        padding: EdgeInsets.only( bottom: 10.v),
-                        child: Text(
-                          secondText,
-                          style: CustomTextStyles.titleMediumMedium,
-                          textAlign: TextAlign.center,
+                    if (secondText != '')
+                      Flexible(
+                        child: Padding(
+                          padding: EdgeInsets.only(bottom: 10.v),
+                          child: Text(
+                            secondText,
+                            style: CustomTextStyles.titleMediumMedium,
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ),
-                    ),
                     Flexible(
                       child: Text(
                         'Tap anywhere to continue',
